@@ -129,43 +129,50 @@ const defaultEmbed: EmbedData = {
 };
 
 const renderMarkdown = (content: string) => {
-    const parsed = parse(content);
-    
-    const renderNode = (node: any, key: number): React.ReactNode => {
-        if (typeof node === 'string') return node;
+    if (!content) return null;
+    try {
+        const parsed = parse(content);
+        if (!Array.isArray(parsed)) return content;
         
-        let children;
-        if (Array.isArray(node.content)) {
-            children = node.content.map((child: any, i: number) => renderNode(child, i));
-        } else if (typeof node.content === 'object' && node.content !== null) {
-            children = renderNode(node.content, 0);
-        } else {
-            children = node.content;
-        }
+        const renderNode = (node: any, key: number): React.ReactNode => {
+            if (!node) return null;
+            if (typeof node === 'string') return node;
+            
+            let children;
+            if (Array.isArray(node.content)) {
+                children = node.content.map((child: any, i: number) => renderNode(child, i));
+            } else if (typeof node.content === 'object' && node.content !== null) {
+                children = renderNode(node.content, 0);
+            } else {
+                children = node.content;
+            }
 
-        switch (node.type) {
-            case 'em':
-                return <em key={key}>{children}</em>;
-            case 'strong':
-                return <strong key={key}>{children}</strong>;
-            case 'underline':
-                return <u key={key}>{children}</u>;
-            case 'strike':
-                return <s key={key}>{children}</s>;
-            case 'inlineCode':
-                return <code key={key} className="bg-[#2f3136] px-1 py-0.5 rounded text-[0.9em]">{children}</code>;
-            case 'codeBlock':
-                return (
-                    <pre key={key} className="bg-[#2f3136] p-2 rounded mt-1 mb-1">
-                        <code>{children}</code>
-                    </pre>
-                );
-            default:
-                return children;
-        }
-    };
+            switch (node.type) {
+                case 'em':
+                    return <em key={key}>{children}</em>;
+                case 'strong':
+                    return <strong key={key}>{children}</strong>;
+                case 'underline':
+                    return <u key={key}>{children}</u>;
+                case 'strike':
+                    return <s key={key}>{children}</s>;
+                case 'inlineCode':
+                    return <code key={key} className="bg-[#2f3136] px-1 py-0.5 rounded text-[0.9em]">{children}</code>;
+                case 'codeBlock':
+                    return (
+                        <pre key={key} className="bg-[#2f3136] p-2 rounded mt-1 mb-1">
+                            <code>{children}</code>
+                        </pre>
+                    );
+                default:
+                    return children;
+            }
+        };
 
-    return parsed.map((node, i) => renderNode(node, i));
+        return parsed.map((node, i) => renderNode(node, i));
+    } catch {
+        return content;
+    }
 };
 
 const EmbedBuilder: React.FC = () => {
@@ -211,15 +218,16 @@ const EmbedBuilder: React.FC = () => {
         }
     };
 
-    const groupedChannels = channels.reduce<CategoryGroup[]>((acc, channel) => {
-        if (!channel.parent) {
+    const groupedChannels = (channels || []).reduce<CategoryGroup[]>((acc, channel) => {
+        if (!channel || !channel.id) return acc;
+        if (!channel.parent || !channel.parent.id) {
             const noCategoryGroup = acc.find(g => g.id === 'no-category');
             if (noCategoryGroup) {
                 noCategoryGroup.channels.push(channel);
             } else {
                 acc.push({
                     id: 'no-category',
-                    name: 'No Category',
+                    name: 'Channels',
                     channels: [channel]
                 });
             }
@@ -230,7 +238,7 @@ const EmbedBuilder: React.FC = () => {
             } else {
                 acc.push({
                     id: channel.parent.id,
-                    name: channel.parent.name,
+                    name: channel.parent.name || 'Category',
                     channels: [channel]
                 });
             }
@@ -238,13 +246,13 @@ const EmbedBuilder: React.FC = () => {
         return acc;
     }, []);
 
-    const sortedGroups = groupedChannels.sort((a, b) => {
+    const sortedGroups = (groupedChannels || []).sort((a, b) => {
         if (a.id === 'no-category') return -1;
         if (b.id === 'no-category') return 1;
-        return a.name.localeCompare(b.name);
+        return (a.name || '').localeCompare(b.name || '');
     }).map(group => ({
         ...group,
-        channels: group.channels.sort((a, b) => a.name.localeCompare(b.name))
+        channels: (group.channels || []).sort((a, b) => (a.name || '').localeCompare(b.name || ''))
     }));
 
     const handleChange = (path: string, value: string) => {

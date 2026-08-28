@@ -4,9 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBan, faPlus, faTrash, faShieldHalved, faCheck } from '@fortawesome/free-solid-svg-icons';
 
 export default function SettingsPage() {
-    const [bannedWords, setBannedWords] = useState([
-        "badword1", "badword2", "nigger", "faggot", "retard", "scam", "free nitro"
-    ]);
+    const [bannedWords, setBannedWords] = useState([]);
     const [newWord, setNewWord] = useState('');
     const [scamDetection, setScamDetection] = useState(true);
     const [blockInvites, setBlockInvites] = useState(true);
@@ -136,23 +134,27 @@ export default function SettingsPage() {
                     </button>
                 </form>
 
-                <div className="flex flex-wrap gap-2.5">
-                    {bannedWords.map((word) => (
-                        <span
-                            key={word}
-                            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-sm font-medium bg-red-500/10 text-red-400 border border-red-500/20"
-                        >
-                            <code>{word}</code>
-                            <button
-                                onClick={() => handleRemoveWord(word)}
-                                className="hover:text-red-300 transition-colors p-0.5"
-                                title="Remove word"
+                {bannedWords.length === 0 ? (
+                    <p className="text-sm text-gray-500 italic">No banned words configured yet. Type a word above and click "Add Word".</p>
+                ) : (
+                    <div className="flex flex-wrap gap-2.5">
+                        {bannedWords.map((word) => (
+                            <span
+                                key={word}
+                                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-sm font-medium bg-red-500/10 text-red-400 border border-red-500/20"
                             >
-                                <FontAwesomeIcon icon={faTrash} className="w-3.5 h-3.5" />
-                            </button>
-                        </span>
-                    ))}
-                </div>
+                                <code>{word}</code>
+                                <button
+                                    onClick={() => handleRemoveWord(word)}
+                                    className="hover:text-red-300 transition-colors p-0.5"
+                                    title="Remove word"
+                                >
+                                    <FontAwesomeIcon icon={faTrash} className="w-3.5 h-3.5" />
+                                </button>
+                            </span>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );
