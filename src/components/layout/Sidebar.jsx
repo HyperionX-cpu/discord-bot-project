@@ -238,12 +238,16 @@ export default function Sidebar({ navName = "", onClose, isMobileMenuOpen }) {
     const loadPermissionsAndUser = async () => {
       try {
         const [configResponse, userResponse] = await Promise.all([
-          api.get("/auth/config"),
-          api.get("/auth/me")
+          api.get("/auth/config").catch(() => ({ data: { permissions: { Dashboard: {} } } })),
+          api.get("/auth/me").catch(() => ({ data: { user: null } }))
         ]);
 
-        setPermissions(configResponse.data.permissions.Dashboard);
-        setUser(userResponse.data.user);
+        if (configResponse?.data?.permissions?.Dashboard) {
+          setPermissions(configResponse.data.permissions.Dashboard);
+        }
+        if (userResponse?.data?.user) {
+          setUser(userResponse.data.user);
+        }
       } catch (error) {
         console.error("Failed to load permissions:", error);
       }
