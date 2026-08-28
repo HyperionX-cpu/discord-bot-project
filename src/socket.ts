@@ -2,7 +2,7 @@ import { io } from 'socket.io-client';
 
 const API_URL = window.DASHBOARD_CONFIG?.CLIENT_URL || window.DASHBOARD_CONFIG?.API_URL || '';
 
-const socket = io(API_URL || window.location.origin, {
+export const socket = io(API_URL || (typeof window !== 'undefined' ? window.location.origin : ''), {
     autoConnect: false,
     reconnection: true,
     reconnectionAttempts: 3,
@@ -27,7 +27,7 @@ socket.on('disconnect', (reason) => {
 });
 
 socket.on('connect_error', () => {
-    // Gracefully handle disconnect when backend is not online
+    // Gracefully handle disconnect
 });
 
 export const joinTicketRoom = (ticketId: string) => {
