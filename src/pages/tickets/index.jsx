@@ -3,19 +3,8 @@ import { motion } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTicket, faCheck, faTrash, faPlus, faUser, faClock, faComments } from '@fortawesome/free-solid-svg-icons';
 
-interface TicketItem {
-    id: string;
-    channelName: string;
-    opener: string;
-    openerId: string;
-    category: string;
-    createdAt: string;
-    status: 'open' | 'closed';
-    details: string;
-}
-
 export default function TicketsPage() {
-    const [tickets, setTickets] = useState<TicketItem[]>([
+    const [tickets, setTickets] = useState([
         {
             id: '1',
             channelName: 'getkey-hyperion',
@@ -58,9 +47,9 @@ export default function TicketsPage() {
         }
     ]);
 
-    const [filter, setFilter] = useState<'all' | 'open' | 'closed'>('open');
+    const [filter, setFilter] = useState('open');
 
-    const handleCloseTicket = (id: string) => {
+    const handleCloseTicket = (id) => {
         setTickets(tickets.map(t => t.id === id ? { ...t, status: 'closed' } : t));
     };
 
@@ -68,7 +57,6 @@ export default function TicketsPage() {
 
     return (
         <div className="space-y-6">
-            {/* Header */}
             <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 shadow-xl flex items-center justify-between">
                 <div>
                     <h1 className="text-2xl font-black text-white flex items-center gap-3">
@@ -76,11 +64,10 @@ export default function TicketsPage() {
                         Live Ticket Management
                     </h1>
                     <p className="text-sm text-gray-400 mt-1">
-                        Active ticket channels created via Discord modals (<code>/ticket_panel</code>).
+                        Active ticket channels created via Discord modals (/ticket_panel).
                     </p>
                 </div>
 
-                {/* Filter Pills */}
                 <div className="flex bg-gray-800/80 p-1.5 rounded-xl border border-gray-700">
                     <button
                         onClick={() => setFilter('open')}
@@ -103,7 +90,6 @@ export default function TicketsPage() {
                 </div>
             </div>
 
-            {/* Ticket Cards Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {filteredTickets.map((ticket) => (
                     <motion.div
