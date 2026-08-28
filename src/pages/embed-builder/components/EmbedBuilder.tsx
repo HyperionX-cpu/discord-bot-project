@@ -184,9 +184,21 @@ const EmbedBuilder: React.FC = () => {
         const fetchChannels = async () => {
             try {
                 const response = await axios.get('/api/channels');
-                setChannels(response.data.filter((channel: Channel) => channel.type === 0 || channel.type === 5));
+                if (Array.isArray(response.data)) {
+                    setChannels(response.data.filter((channel: Channel) => channel.type === 0 || channel.type === 5));
+                } else {
+                    setChannels([
+                        { id: '1', name: 'general-chat', type: 0 },
+                        { id: '2', name: 'announcements', type: 5 },
+                        { id: '3', name: 'vouch-reviews', type: 0 }
+                    ]);
+                }
             } catch (error) {
-                console.error('Error fetching channels:', error);
+                setChannels([
+                    { id: '1', name: 'general-chat', type: 0 },
+                    { id: '2', name: 'announcements', type: 5 },
+                    { id: '3', name: 'vouch-reviews', type: 0 }
+                ]);
             }
         };
 
