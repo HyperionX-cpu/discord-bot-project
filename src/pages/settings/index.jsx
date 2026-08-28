@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBan, faPlus, faTrash, faShieldHalved, faCheck, faSave } from '@fortawesome/free-solid-svg-icons';
+import { faBan, faPlus, faTrash, faShieldHalved, faCheck } from '@fortawesome/free-solid-svg-icons';
 
 export default function SettingsPage() {
-    const [bannedWords, setBannedWords] = useState<string[]>([
+    const [bannedWords, setBannedWords] = useState([
         "badword1", "badword2", "nigger", "faggot", "retard", "scam", "free nitro"
     ]);
     const [newWord, setNewWord] = useState('');
@@ -22,7 +22,7 @@ export default function SettingsPage() {
         }
     }, []);
 
-    const handleAddWord = (e: React.FormEvent) => {
+    const handleAddWord = (e) => {
         e.preventDefault();
         const trimmed = newWord.trim().toLowerCase();
         if (trimmed && !bannedWords.includes(trimmed)) {
@@ -34,7 +34,7 @@ export default function SettingsPage() {
         }
     };
 
-    const handleRemoveWord = (wordToRemove: string) => {
+    const handleRemoveWord = (wordToRemove) => {
         const updated = bannedWords.filter(w => w !== wordToRemove);
         setBannedWords(updated);
         localStorage.setItem('bot_banned_words', JSON.stringify(updated));
@@ -48,7 +48,6 @@ export default function SettingsPage() {
 
     return (
         <div className="space-y-6">
-            {/* Header */}
             <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 shadow-xl flex items-center justify-between">
                 <div>
                     <h1 className="text-2xl font-black text-white flex items-center gap-3">
@@ -71,7 +70,6 @@ export default function SettingsPage() {
                 )}
             </div>
 
-            {/* Quick Security Toggles */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-gray-900/80 border border-gray-800 rounded-2xl p-5 flex items-center justify-between">
                     <div>
@@ -113,7 +111,6 @@ export default function SettingsPage() {
                 </div>
             </div>
 
-            {/* Banned Words Management */}
             <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 shadow-xl">
                 <h2 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
                     <FontAwesomeIcon icon={faBan} className="text-red-500" />
@@ -123,7 +120,6 @@ export default function SettingsPage() {
                     Any message sent containing these words will be silently deleted in all guild channels.
                 </p>
 
-                {/* Add new word input */}
                 <form onSubmit={handleAddWord} className="flex gap-3 mb-6">
                     <input
                         type="text"
@@ -140,7 +136,6 @@ export default function SettingsPage() {
                     </button>
                 </form>
 
-                {/* Bad words pills */}
                 <div className="flex flex-wrap gap-2.5">
                     {bannedWords.map((word) => (
                         <span
