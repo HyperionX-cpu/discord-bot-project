@@ -1,6 +1,5 @@
 import React, { Suspense, useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
-import * as FontAwesomeIcons from '@fortawesome/free-solid-svg-icons';
 import { AuthGuard } from './components/auth/AuthGuard';
 import { PermissionGuard } from './components/auth/PermissionGuard';
 import Layout from './components/layout/Layout';
@@ -33,19 +32,37 @@ interface DashboardConfig {
     };
 }
 
+const defaultDashboardConfig: DashboardConfig = {
+    clientId: '',
+    redirectUri: '',
+    permissions: {
+        Dashboard: {
+            Login: [],
+            Usage: [],
+            Settings: [],
+            Embed: [],
+            Suggestions: []
+        }
+    }
+};
+
 function AppRoutes() {
     const location = useLocation();
     const navigate = useNavigate();
     const [isReady, setIsReady] = useState(false);
-    const [config, setConfig] = useState<DashboardConfig | null>(null);
+    const [config, setConfig] = useState<DashboardConfig>(defaultDashboardConfig);
 
     useEffect(() => {
         async function init() {
             try {
-                const response = await axios.get('/api/auth/config');
-                setConfig(response.data);
+                const response = await axios.get('/api/auth/config', { timeout: 3000 });
+                if (response.data) {
+                    setConfig(response.data);
+                }
             } catch (error) {
-                console.error('[App] Failed to load config:', error);
+                console.warn('[App] Backend not connected yet, using fallback config.');
+            } finally {
+                setIsReady(true);
             }
         }
         init();
@@ -53,27 +70,32 @@ function AppRoutes() {
 
     useEffect(() => {
         async function checkAuth() {
-            const isAuth = await auth.isAuthenticated();
-            const isPublicRoute = location.pathname.includes('/auth/') || location.pathname === '/login';
+            try {
+                const isAuth = await auth.isAuthenticated();
+                const isPublicRoute = location.pathname.includes('/auth/') || location.pathname === '/login';
 
-            if (!isAuth && !isPublicRoute) {
-                const returnUrl = location.pathname + location.search;
-                navigate('/auth/signin', {
-                    replace: true,
-                    state: { returnUrl }
-                });
+                if (!isAuth && !isPublicRoute) {
+                    const returnUrl = location.pathname + location.search;
+                    navigate('/auth/signin', {
+                        replace: true,
+                        state: { returnUrl }
+                    });
+                }
+            } catch (e) {
+                if (!location.pathname.includes('/auth/')) {
+                    navigate('/auth/signin', { replace: true });
+                }
             }
-            setIsReady(true);
         }
         checkAuth();
     }, [navigate, location]);
 
-    if (!isReady || !config) {
+    if (!isReady) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-950 to-black flex items-center justify-center">
                 <div className="flex flex-col items-center gap-4">
                     <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-                    <p className="text-gray-400 animate-pulse">Loading...</p>
+                    <p className="text-gray-400 animate-pulse">Loading Dashboard...</p>
                 </div>
             </div>
         );
@@ -142,4 +164,4 @@ export default function App() {
             <AppRoutes />
         </Router>
     );
-} 
+}
